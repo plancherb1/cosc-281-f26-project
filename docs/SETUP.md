@@ -132,7 +132,7 @@ git clone https://github.com/plancherb1/cosc-281-f26-project.git a2r-student
 
 If the Jetson cannot access GitHub but you already cloned the folder locally you can zip and move the data with something like (replace `ROBOT_IP`):
 ```bash
-zip a2r-student.zip a2r-student
+zip -r a2r-student.zip a2r-student
 ssh a2r-lab-jetson@ROBOT_IP
 mkdir a2r-student
 exit
