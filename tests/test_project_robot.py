@@ -298,51 +298,6 @@ def test_independent_hardware_gate(change):
     assert not validate_command(**args)
 
 
-@pytest.fixture
-def navigation(monkeypatch):
-    """Exercise the actual ROS adapter with minimal in-process message mocks."""
-    class Message:
-        def __init__(self):
-            self.header = types.SimpleNamespace(stamp=None)
-
-    class Node:
-        def __init__(self, name):
-            self.subscriptions = {}
-            self.messages = []
-        def declare_parameter(self, name, value):
-            return types.SimpleNamespace(value=value)
-        def create_subscription(self, kind, topic, callback, qos):
-            self.subscriptions[topic] = callback
-        def create_publisher(self, *args):
-            return types.SimpleNamespace(publish=self.messages.append)
-        def create_timer(self, period, callback):
-            assert period == .05
-        def get_clock(self):
-            return types.SimpleNamespace(now=lambda: types.SimpleNamespace(to_msg=lambda: 'stamp'))
-        def get_logger(self):
-            return types.SimpleNamespace(error=lambda text: None)
-
-    modules = {
-        'rclpy': {}, 'rclpy.node': {'Node': Node},
-        'rclpy.qos': {'qos_profile_sensor_data': 'sensor',
-                     'QoSProfile': lambda **kw: kw,
-                     'ReliabilityPolicy': types.SimpleNamespace(BEST_EFFORT='best_effort')},
-        'rclpy.executors': {'ExternalShutdownException': type('Shutdown', (Exception,), {})},
-        'sensor_msgs.msg': {'Image': Message, 'Imu': Message},
-        'cv_bridge': {'CvBridge': lambda: types.SimpleNamespace(imgmsg_to_cv2=lambda msg, **kw: msg.data)},
-        'course_robot_interfaces.msg': {'MotionRequest': Message},
-    }
-    for name, values in modules.items():
-        mod = types.ModuleType(name)
-        mod.__dict__.update(values)
-        monkeypatch.setitem(sys.modules, name, mod)
-    path = ROOT/'robot/src/team_navigation/team_navigation/navigation.py'
-    spec = importlib.util.spec_from_file_location('project_navigation_test', path)
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-    return mod.Navigation()
-
-
 def test_starter_receives_sensors_and_publishes_zero(navigation):
     msg = types.SimpleNamespace(data=[[[1, 2, 3]]], header=types.SimpleNamespace(stamp='image-stamp'))
     navigation.subscriptions['camera/image_raw'](msg)

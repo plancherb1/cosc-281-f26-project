@@ -1,0 +1,14 @@
+/**:
+  ros__parameters:
+    # Starting HSV ranges (OpenCV: H 0-179, S 0-255, V 0-255). If
+    # hsv_config_path exists, its values replace these at startup.
+    yellow_lo: [20, 80, 80]
+    yellow_hi: [35, 255, 255]
+    blue_lo: [95, 80, 50]
+    blue_hi: [130, 255, 255]
+    hsv_config_path: ~/hsv_config.json
+    snapshot_dir: ~/snapshots
+    # P-controller preview drawn on the debug view only; nothing is sent to the motors.
+    preview_base_speed: 0.5
+    preview_k_p: 0.5
+    stale_after_s: 1.0

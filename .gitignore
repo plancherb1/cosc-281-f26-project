@@ -14,3 +14,9 @@ log/
 *.synctex.gz
 .DS_Store
 Thumbs.db
+*.7z
+*.zip
+*.tar.gz
+*.npy
+.312/
+**/*.egg-info/

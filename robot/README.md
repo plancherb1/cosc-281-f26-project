@@ -50,6 +50,28 @@ ros2 launch team_navigation team.launch.py namespace:="$ROBOT_NAMESPACE"
 
 Follow [sensor checks and physical acceptance](../docs/SETUP.md#run-the-student-program) before enabling movement. Keep namespace/domain consistent in all terminals.
 
+## Track perception test (camera only)
+
+`track_test` is the robot version of the PC "Camera Test" prototype. It finds the yellow track line and blue boundary tape in the robot's camera and **publishes no motion requests**. Rebuild once after pulling it (it adds a new node), then with the base running in terminal A, run this in terminal B instead of the team launch:
+
+```bash
+ros2 launch team_navigation track_test.launch.py namespace:="$ROBOT_NAMESPACE"
+```
+
+- **Log:** `found`, `error` (-1 track far left … +1 far right), yellow pixel count and blue fractions, twice a second.
+- **Browser:** `http://ROBOT_IP:8081/` on your PC shows the camera overlay and colour masks, with HSV sliders that take effect live. **Save to file** writes `~/hsv_config.json` on the Jetson, which is loaded at the next start. **Snapshot** saves a full-resolution frame to `~/snapshots/`; copy it to your PC with `scp` to tune offline with the PC prototype. Use `web_port:=0` to turn the page off.
+- **RViz:** add an Image display on `/$ROBOT_NAMESPACE/perception/debug/compressed`.
+- **Without a browser:**
+
+```bash
+ros2 param set "/$ROBOT_NAMESPACE/track_test" yellow_lo "[20, 80, 80]"
+ros2 service call "/$ROBOT_NAMESPACE/perception/save_config" std_srvs/srv/Trigger '{}'
+ros2 service call "/$ROBOT_NAMESPACE/perception/reload_config" std_srvs/srv/Trigger '{}'
+ros2 service call "/$ROBOT_NAMESPACE/perception/save_snapshot" std_srvs/srv/Trigger '{}'
+```
+
+The image processing itself lives in `team_navigation/perception.py`, which has no ROS dependency, so `navigation.py` can import it once you add motor control. Tune under the lighting the robot will run in.
+
 ## Public request
 
 Topic: `navigation/request`, relative to the assigned robot namespace.
